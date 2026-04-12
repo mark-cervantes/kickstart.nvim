@@ -1,43 +1,50 @@
 return {
-  'zbirenbaum/copilot.lua',
-  dependencies = { 'copilotlsp-nvim/copilot-lsp' },
-  cmd = 'Copilot',
+  'github/copilot.vim',
   event = 'InsertEnter',
+  cmd = { 'Copilot' },
+  init = function()
+    vim.g.copilot_assume_mapped = true
+    vim.g.copilot_no_tab_map = true
+    vim.g.copilot_enabled = 1
+    vim.g.copilot_filetypes = { ['*'] = true }
+    -- Enable ghost text
+    vim.g.copilot_suggestion = { enabled = true }
+    vim.g.copilot_panel = { enabled = true }
+  end,
   config = function()
-    require('copilot').setup {
-      suggestion = {
-        enabled = true,
-        auto_trigger = true,
-        debounce = 75,
-        keymap = {
-          accept = false, -- Disable built-in accept
-          accept_word = false,
-          accept_line = false,
-          next = '<M-]>',
-          prev = '<M-[>',
-          dismiss = '<C-]>',
-        },
-      },
-    }
+    -- Accept full suggestion: Ctrl+y (terminal-friendly)
+    local function set_accept_mapping(lhs)
+      pcall(vim.keymap.set, 'i', lhs, 'copilot#Accept("")', {
+        expr = true,
+        replace_keycodes = false,
+        desc = 'Copilot accept',
+      })
+    end
 
-    -- Super-Tab implementation
-    vim.keymap.set('i', '<Tab>', function()
-      if require('copilot.suggestion').is_visible() then
-        require('copilot.suggestion').accept()
-      else
-        -- Fall back to regular tab
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Tab>', true, false, true), 'n', false)
-      end
-    end, { silent = true, expr = true })
+    set_accept_mapping('<C-y>')
+    -- Optional: Alt+Enter (may not be supported in all terminals)
+    set_accept_mapping('<M-CR>')
 
-    -- Shift-Tab for NES functionality
-    vim.keymap.set('i', '<S-Tab>', function()
-      if require('copilot.suggestion').is_visible() then
-        require('copilot.suggestion').next()
-      else
-        -- Your preferred Shift-Tab behavior
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<S-Tab>', true, false, true), 'n', false)
-      end
-    end, { silent = true, expr = true })
+    -- Accept one word: Ctrl+l
+    vim.keymap.set('i', '<C-l>', 'copilot#AcceptWord()', {
+      expr = true,
+      replace_keycodes = false,
+      desc = 'Copilot accept word',
+    })
+
+    -- Next / previous / dismiss: Ctrl+n / Ctrl+p / Ctrl+x
+    vim.keymap.set('i', '<C-n>', function() vim.fn['copilot#Next']() end, { desc = 'Copilot next suggestion' })
+    vim.keymap.set('i', '<C-p>', function() vim.fn['copilot#Previous']() end, { desc = 'Copilot previous suggestion' })
+    vim.keymap.set('i', '<C-x>', function() vim.fn['copilot#Dismiss']() end, { desc = 'Copilot dismiss' })
+
+    -- Manually trigger suggestion: Ctrl+g
+    vim.keymap.set('i', '<C-g>', function() vim.fn['copilot#Suggest']() end, { desc = 'Copilot trigger suggestion' })
+
+    vim.api.nvim_create_autocmd('User', {
+      pattern = 'BlinkCmpMenuOpen',
+      callback = function()
+        pcall(vim.fn['copilot#Dismiss'])
+      end,
+    })
   end,
 }

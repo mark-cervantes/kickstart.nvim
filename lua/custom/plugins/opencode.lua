@@ -25,7 +25,7 @@ return {
     vim.keymap.set({ 'n', 'x' }, 'ga', function()
       require('opencode').prompt '@this'
     end, { desc = 'Add to opencode' })
-    vim.keymap.set({ 'n', 't' }, '<leader>o', function()
+    vim.keymap.set({ 'n', 't' }, '<A-o>', function()
       require('opencode').toggle()
     end, { desc = 'Toggle opencode' })
     vim.keymap.set('n', '<S-C-u>', function()
@@ -38,4 +38,21 @@ return {
     vim.keymap.set('n', '+', '<C-a>', { desc = 'Increment', noremap = true })
     vim.keymap.set('n', '-', '<C-x>', { desc = 'Decrement', noremap = true })
   end,
+  vim.api.nvim_create_user_command('OpencodeHardReset', function()
+    -- 1. Kill any real processes
+    vim.fn.system { 'pkill', '-f', 'opencode' }
+
+    -- 2. Clear opencode.nvim internal module cache
+    for k in pairs(package.loaded) do
+      if k:match '^opencode' then
+        package.loaded[k] = nil
+      end
+    end
+
+    -- 3. Re-require and start fresh
+    vim.defer_fn(function()
+      local oc = require 'opencode'
+      oc.start()
+    end, 200)
+  end, { desc = 'Hard reset opencode (process + Lua state)' }),
 }

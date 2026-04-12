@@ -39,6 +39,11 @@ return {
             ['a'] = 'add',
             ['d'] = 'delete',
             ['r'] = 'rename',
+            ['h'] = 'close_node', -- Jumps to parent and closes it
+            ['l'] = 'open', -- Open file or expand directory
+            ['.'] = 'set_root', -- Set CWD to selected folder
+            ['R'] = 'refresh', -- Refresh the tree view
+            ['P'] = { 'toggle_preview', config = { use_float = true } }, -- Preview file
           },
         },
         filesystem = {
