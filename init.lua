@@ -82,6 +82,10 @@ I hope you enjoy your Neovim journey,
 
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
+--
+-- enable project-scoped .nvim.lua
+vim.o.exrc = true
+vim.o.secure = true
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -205,6 +209,22 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
 --  See `:help vim.highlight.on_yank()`
+--
+vim.api.nvim_create_autocmd('BufEnter', {
+  group = vim.api.nvim_create_augroup('kickstart-autoroot', { clear = true }),
+  callback = function()
+    local path = vim.api.nvim_buf_get_name(0)
+    if path == '' or vim.bo.buftype ~= '' then
+      return
+    end
+    local dir = vim.fn.fnamemodify(path, ':p:h')
+    -- If it's a valid directory, change to it
+    if vim.fn.isdirectory(dir) == 1 then
+      vim.api.nvim_set_current_dir(dir)
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),

@@ -17,9 +17,10 @@ return {
         enable_diagnostics = true,
         default_component_configs = {
           icon = {
-            folder_closed = '',
-            folder_open = '',
-            folder_empty = 'ﰊ',
+            folder_closed = '󰉋',
+            folder_open = '󰝰',
+            folder_empty = '󰉖',
+            folder_empty_open = '󰷏',
           },
           indent = {
             padding = 1,
@@ -39,25 +40,35 @@ return {
             ['a'] = 'add',
             ['d'] = 'delete',
             ['r'] = 'rename',
-            ['h'] = 'close_node', -- Jumps to parent and closes it
-            ['l'] = 'open', -- Open file or expand directory
-            ['.'] = 'set_root', -- Set CWD to selected folder
-            ['R'] = 'refresh', -- Refresh the tree view
-            ['P'] = { 'toggle_preview', config = { use_float = true } }, -- Preview file
+            ['h'] = 'close_node',
+            ['l'] = 'open',
+            ['.'] = 'set_root',
+            ['R'] = 'refresh',
+            ['P'] = { 'toggle_preview', config = { use_float = true } },
           },
         },
         filesystem = {
-          follow_current_file = true,
+          bind_to_cwd = false,
+          follow_current_file = { enabled = true },
           use_libuv_file_watcher = true,
           filtered_items = {
             visible = false,
-            hide_dotfiles = false,
+            hide_dotfiles = true,
+            hide_gitignored = true,
             hide_by_name = { 'node_modules' },
+          },
+          window = {
+            mappings = {
+              ['l'] = 'open',
+              ['h'] = 'close_node',
+              ['/'] = { 'fuzzy_finder', config = { keep_filter_on_submit = true } },
+              ['<esc>'] = 'clear_filter',
+            },
           },
         },
       }
 
-      -- optional: toggle mapping
+      -- toggle mapping
       vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { noremap = true, silent = true })
     end,
   },
